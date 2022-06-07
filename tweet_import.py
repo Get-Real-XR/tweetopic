@@ -58,10 +58,8 @@ def clean_text(text):
 
 def validate_tweet(tweet):
     '''Bool check if tweet would not error on clean_tweets.
-
-\tIt appears that some tweets are filled with Nones. tweet_is_valid tests against this possibility.
-\tIf any other criterion for invalid tweets arise, they should be added to validate_tweet.'''
-Unsupported opcode: GEN_START
+    It appears that some tweets are filled with Nones. tweet_is_valid tests against this possibility.
+    If any other criterion for invalid tweets arise, they should be added to validate_tweet.'''
     return not any((lambda .0: pass# WARNING: Decompyle incomplete
 )(tweet.values()))
 
