@@ -1,18 +1,12 @@
 import collections
-import datetime
 import itertools
 
 import os
-from typing import Callable, Any
-from datetime import datetime
 from tqdm import tqdm
-from csv import DictReader, DictWriter, reader
+from csv import DictReader, DictWriter
 from pathlib import Path
 import re
 import subprocess
-from collections.abc import Sized, Iterable, Iterator
-
-from typing import TypedDict
 
 OUTPUT_ENCODING = 'utf8'
 
@@ -56,17 +50,17 @@ def dedup_tweets(tweets):
         if id in ids:
             continue
         else:
-            yield tweet
             ids.add(id)
+            yield tweet
 
 
 def clean_text(text):
     """Returns cleaned text from a text input."""
-    text = re.sub('http\\S*\\b', '', text)
-    text = re.sub('@\\S*\\b', '', text)
-    text = re.sub("[^\\w.,'?/\\[\\]()]", ' ', text)
-    text = re.sub("(?<=\\B)[.,'?]", '', text)
-    text = re.sub('[\\s\\n]+', ' ', text)
+    text = re.sub(r'http\S*\b', '', text)  # eliminate links
+    text = re.sub(r'@\S*\b', '', text)  # eliminate usernames
+    text = re.sub(r"[^\w.,'?/\[\]()]", ' ', text)  # replace unwanted characters with spaces
+    text = re.sub(r"^\.", '', text)  # eliminate leading period
+    text = re.sub(r'[\s\n]+', ' ', text)  # compress whitespace
     text = text.strip()
     return text
 
@@ -85,18 +79,14 @@ def make_encodable_values_tweet(tweet):
     return {k: make_encodable_text(v) for k, v in tweet.items()}
 
 
-def validate_tweet(tweet):
-    """
-    Ensure all fields are populated.
-    """
-    return all(tweet.values())
-
-
 def process_tweet(tweet):
-    tweet = clean_tweet(tweet)
-    tweet = make_encodable_values_tweet(tweet)
-    valid = validate_tweet(tweet)
-    return tweet, valid
+    try:
+        tweet = clean_tweet(tweet)
+        tweet = make_encodable_values_tweet(tweet)
+        valid = all(tweet.values())
+        return tweet, valid
+    except AttributeError:
+        return tweet, False
 
 
 def process_tweets(tweets):
@@ -130,7 +120,7 @@ def write_tweets(tweets, path):
 
 def load(input_dir, output_file=None, filter_by=None, limit=None):
     tweets = import_from_dir(input_dir)
-    tweets = dedup_tweets(tweets)
+    # tweets = dedup_tweets(tweets) todo
     tweets = process_tweets(tweets)
     if filter_by:
         tweets = filter(filter_by, tweets)
@@ -146,7 +136,9 @@ def load_list(input_dir, output_file=None, filter_by=None, limit=None):
     Useful when you want eager execution and to keep the results.
     See load for more details.
     """
-    return list(load(input_dir, output_file, filter_by, limit))
+    tweets = load(input_dir, output_file, filter_by, limit)
+    tweets = tqdm(tweets, total=limit)
+    return list(tweets)
 
 
 def load_deque(input_dir, output_file, filter_by=None, limit=None):
@@ -158,8 +150,6 @@ def load_deque(input_dir, output_file, filter_by=None, limit=None):
     collections.deque(load(input_dir, filter_by, limit), maxlen=0)
 
 
+def to_docs(tweets):
+    return [t["clean"] for t in tweets]
 
-
-if __name__ == '__main__':
-    list(tqdm(load()))
-    print('Done!')
