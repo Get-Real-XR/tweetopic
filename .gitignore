@@ -1,4 +1,6 @@
-### Python template
+data/**
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -7,8 +9,7 @@ __pycache__/
 # C extensions
 *.so
 
-#CSV
-*.csv
+
 
 # Distribution / packaging
 .Python
