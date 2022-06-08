@@ -100,7 +100,6 @@ def process_tweet(tweet):
 
 
 def process_tweets(tweets):
-    
     for tweet in tweets:
         try:
             tweet, valid = process_tweet(tweet)
